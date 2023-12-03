@@ -36,3 +36,5 @@ terraform.rc
 # Additional
 .terraform.lock*
 package.zip
+PIL
+Pillow*

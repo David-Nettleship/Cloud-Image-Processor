@@ -35,6 +35,7 @@ resource "aws_lambda_function" "image_processor" {
   function_name = "image_processor"
   role          = aws_iam_role.lambdas_role.arn
   handler       = "processor.image_processor"
+  timeout       = 30
 
   source_code_hash = data.archive_file.image_processor_zip.output_base64sha256
 

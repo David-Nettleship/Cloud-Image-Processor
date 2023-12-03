@@ -2,23 +2,39 @@
 import json
 import urllib.parse
 import boto3
+from PIL import Image
+from io import BytesIO
 
 print('Loading function')
 
 s3 = boto3.client('s3')
 
 
+def resize_image(bucket, key):
+    size = 500, 500
+    in_mem_file = BytesIO()
+    client = boto3.client('s3')
+
+    file_byte_string = client.get_object(Bucket=bucket, Key=key)['Body'].read()
+    im = Image.open(BytesIO(file_byte_string))
+
+    im.save(in_mem_file, format=im.format)
+    in_mem_file.seek(0)
+
+    response = client.put_object(
+        Body=in_mem_file,
+        Bucket=bucket,
+        Key='resized-small/resized_' + key
+        )
+    
+    return response
+
+
 def image_processor(event, context):
-    print("Received event: " + json.dumps(event, indent=2))
+    #print("Received event: " + json.dumps(event, indent=2))
 
     # Get the object from the event and show its content type
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-    try:
-        response = s3.get_object(Bucket=bucket, Key=key)
-        print("CONTENT TYPE: " + response['ContentType'])
-        return response['ContentType']
-    except Exception as e:
-        print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-        raise e
+
+    resize_image(bucket, key)
