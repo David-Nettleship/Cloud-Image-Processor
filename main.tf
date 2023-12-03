@@ -3,5 +3,7 @@ module "storage" {
 }
 
 module "resize_lambda" {
-  source = "./modules/lambda"
+  source     = "./modules/lambda"
+  bucket_arn = module.storage.bucket_arn
+  bucket_id  = module.storage.bucket_id
 }
